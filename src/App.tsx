@@ -529,6 +529,8 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const contentRef = useRef<HTMLTextAreaElement | null>(null)
   const cursorPosRef = useRef<number | null>(null)
+  const pasteBlockRef = useRef(false)
+  const pendingPasteRef = useRef<{ value: string; pos: number } | null>(null)
   const [canvasScale, setCanvasScale] = useState(1)
 
   const saveCursorPos = () => {
@@ -777,6 +779,55 @@ function App() {
     event.target.value = ''
   }
 
+  const handlePasteContent = (e: React.ClipboardEvent) => {
+    if (pasteBlockRef.current) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+    const ta = contentRef.current
+    if (!ta || !canAddImage) return
+    if (e.target !== ta) return
+    const dt = e.clipboardData
+    if (!dt) return
+    const file =
+      dt.files?.length && dt.files[0].type.startsWith('image/')
+        ? dt.files[0]
+        : (() => {
+            if (!dt.items?.length) return null
+            for (let i = 0; i < dt.items.length; i++) {
+              if (dt.items[i].type.startsWith('image/')) {
+                return dt.items[i].getAsFile()
+              }
+            }
+            return null
+          })()
+    if (!file) return
+    pasteBlockRef.current = true
+    e.preventDefault()
+    e.stopPropagation()
+    const pos = ta.selectionStart
+    const reader = new FileReader()
+    reader.onload = () => {
+      const value = typeof reader.result === 'string' ? reader.result : ''
+      pendingPasteRef.current = { value, pos }
+      setImages((prev) => {
+        const pending = pendingPasteRef.current
+        if (!pending) return prev
+        pendingPasteRef.current = null
+        const marker = `[图片${prev.length + 1}]`
+        setContent((c) => c.slice(0, pending.pos) + marker + c.slice(pending.pos))
+        return [...prev, pending.value]
+      })
+      setTimeout(() => {
+        pasteBlockRef.current = false
+      }, 600)
+    }
+    reader.onerror = () => {
+      pasteBlockRef.current = false
+    }
+    reader.readAsDataURL(file)
+  }
 
   const saveCard = async (index: number) => {
     const node = cardRefs.current[index]
@@ -847,6 +898,7 @@ function App() {
             className={`min-h-0 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_6px_-1px_rgba(15,23,42,0.05),0_2px_4px_-2px_rgba(15,23,42,0.05)] ${
               contentExpanded ? 'flex flex-col overflow-hidden' : 'overflow-auto'
             }`}
+            onPasteCapture={handlePasteContent}
           >
             <input
               ref={fileInputRef}
@@ -1005,6 +1057,7 @@ function App() {
                   onChange={(e) => { setContent(e.target.value); saveCursorPos() }}
                   onSelect={saveCursorPos}
                   onBlur={saveCursorPos}
+                  onPaste={handlePasteContent}
                   placeholder={t.placeholder}
                 />
                 {canAddImage && (
