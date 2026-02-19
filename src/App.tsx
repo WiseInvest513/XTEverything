@@ -57,6 +57,8 @@ const TEXTS: Record<
     publishTime: string
     downloadCurrent: string
     downloadAll: string
+    copyCurrentImage: string
+    copyCurrentPage: string
     pageCount: string
     light: string
     dark: string
@@ -87,6 +89,8 @@ const TEXTS: Record<
     publishTime: '发布时间',
     downloadCurrent: '下载当前页',
     downloadAll: '下载全部页',
+    copyCurrentImage: '复制当前图片',
+    copyCurrentPage: '复制当前页',
     pageCount: '分页数',
     light: '白天',
     dark: '黑夜',
@@ -116,6 +120,8 @@ const TEXTS: Record<
     publishTime: 'Publish time',
     downloadCurrent: 'Download current',
     downloadAll: 'Download all',
+    copyCurrentImage: 'Copy current image',
+    copyCurrentPage: 'Copy current page',
     pageCount: 'Pages',
     light: 'Light',
     dark: 'Dark',
@@ -846,6 +852,59 @@ function App() {
     }
   }
 
+  const copyCurrentImage = async () => {
+    const page = pages[selectedPage]
+    if (!page) return
+    const imageItems = page.items.filter((i): i is { type: 'image'; url: string; fullHeight: number; clipTop?: number; clipHeight?: number } => i.type === 'image')
+    if (imageItems.length !== 1) return
+    const item = imageItems[0]
+    try {
+      let blob: Blob
+      if (item.clipHeight != null && item.clipTop != null) {
+        blob = await new Promise<Blob>((resolve, reject) => {
+          const img = new Image()
+          img.onload = () => {
+            const natW = img.naturalWidth
+            const natH = img.naturalHeight
+            const fullH = item.fullHeight
+            const sy = (item.clipTop! / fullH) * natH
+            const sh = (item.clipHeight! / fullH) * natH
+            const canvas = document.createElement('canvas')
+            canvas.width = CONTENT_WIDTH
+            canvas.height = item.clipHeight!
+            const ctx = canvas.getContext('2d')
+            if (!ctx) return reject(new Error('No context'))
+            ctx.drawImage(img, 0, sy, natW, sh, 0, 0, canvas.width, canvas.height)
+            canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')
+          }
+          img.onerror = reject
+          img.src = item.url
+        })
+      } else {
+        const res = await fetch(item.url)
+        blob = await res.blob()
+      }
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type || 'image/png']: blob })])
+    } catch {
+      // Clipboard API may fail in some contexts
+    }
+  }
+
+  const currentPageImageCount = pages[selectedPage]?.items.filter((i) => i.type === 'image').length ?? 0
+
+  const copyCurrentPage = async () => {
+    const node = cardRefs.current[selectedPage]
+    if (!node) return
+    try {
+      const dataUrl = await toPng(node, { pixelRatio: 2, cacheBust: true })
+      const res = await fetch(dataUrl)
+      const blob = await res.blob()
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type || 'image/png']: blob })])
+    } catch {
+      // Clipboard API may fail
+    }
+  }
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100 text-slate-900">
       <div className="mx-auto flex min-h-0 w-full max-w-[1540px] flex-1 flex-col overflow-hidden px-4 py-3 lg:px-8 lg:py-4">
@@ -1088,17 +1147,32 @@ function App() {
                 }
                 label={t.stats}
               />
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-                <label className="space-y-1.5 text-xs font-medium text-slate-600">{t.comments}<input className={fieldClass} value={comments} onChange={(e) => setComments(e.target.value)} /></label>
-                <label className="space-y-1.5 text-xs font-medium text-slate-600">{t.reposts}<input className={fieldClass} value={reposts} onChange={(e) => setReposts(e.target.value)} /></label>
-                <label className="space-y-1.5 text-xs font-medium text-slate-600">{t.likes}<input className={fieldClass} value={likes} onChange={(e) => setLikes(e.target.value)} /></label>
-                <label className="space-y-1.5 text-xs font-medium text-slate-600">{t.bookmarks}<input className={fieldClass} value={bookmarks} onChange={(e) => setBookmarks(e.target.value)} /></label>
-                <label className="space-y-1.5 text-xs font-medium text-slate-600">{t.views}<input className={fieldClass} type="number" value={views} onChange={(e) => setViews(e.target.value)} /></label>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4 md:grid-cols-3 xl:grid-cols-5">
+                <label className="grid grid-cols-1 gap-1.5 text-xs font-medium text-slate-600">
+                  <span className="min-h-[1.25rem]">{t.comments}</span>
+                  <input className={`${fieldClass} h-10`} value={comments} onChange={(e) => setComments(e.target.value)} />
+                </label>
+                <label className="grid grid-cols-1 gap-1.5 text-xs font-medium text-slate-600">
+                  <span className="min-h-[1.25rem]">{t.reposts}</span>
+                  <input className={`${fieldClass} h-10`} value={reposts} onChange={(e) => setReposts(e.target.value)} />
+                </label>
+                <label className="grid grid-cols-1 gap-1.5 text-xs font-medium text-slate-600">
+                  <span className="min-h-[1.25rem]">{t.likes}</span>
+                  <input className={`${fieldClass} h-10`} value={likes} onChange={(e) => setLikes(e.target.value)} />
+                </label>
+                <label className="grid grid-cols-1 gap-1.5 text-xs font-medium text-slate-600">
+                  <span className="min-h-[1.25rem]">{t.bookmarks}</span>
+                  <input className={`${fieldClass} h-10`} value={bookmarks} onChange={(e) => setBookmarks(e.target.value)} />
+                </label>
+                <label className="grid grid-cols-1 gap-1.5 text-xs font-medium text-slate-600">
+                  <span className="min-h-[1.25rem]">{t.views}</span>
+                  <input className={`${fieldClass} h-10`} type="number" value={views} onChange={(e) => setViews(e.target.value)} />
+                </label>
               </div>
-              <label className="mt-3 block space-y-1.5 text-xs font-medium text-slate-600">
-                {t.publishTime}
+              <label className="mt-4 grid grid-cols-1 gap-1.5 text-xs font-medium text-slate-600">
+                <span className="min-h-[1.25rem]">{t.publishTime}</span>
                 <input
-                  className={fieldClass}
+                  className={`${fieldClass} h-10`}
                   type="datetime-local"
                   value={publishTime}
                   onChange={(e) => setPublishTime(e.target.value)}
@@ -1318,6 +1392,22 @@ function App() {
             </div>
 
             <div className="mt-3 flex flex-shrink-0 flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={copyCurrentPage}
+                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200/80"
+              >
+                {t.copyCurrentPage}
+              </button>
+              {currentPageImageCount === 1 && (
+                <button
+                  type="button"
+                  onClick={copyCurrentImage}
+                  className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-200/80"
+                >
+                  {t.copyCurrentImage}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => saveCard(selectedPage)}
