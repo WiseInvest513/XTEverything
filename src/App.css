@@ -1,0 +1,291 @@
+:root {
+  color-scheme: light;
+}
+
+.tweet-card {
+  margin: 0 auto;
+  border-radius: 1rem;
+  padding: 12px 14px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: TwitterChirp, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.tweet-card.dark {
+  background: #000;
+  color: #e7e9ea;
+  border: 0;
+}
+
+.tweet-card.light {
+  background: #fff;
+  color: #0f1419;
+  border: 1px solid #eff3f4;
+}
+
+.tweet-top {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.user-main {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  flex: 1;
+}
+
+.avatar-wrap {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.initials {
+  display: grid;
+  place-items: center;
+  background: #374151;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 0;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 0;
+  line-height: 1.18;
+}
+
+.name-row strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.handle {
+  margin-top: 1px;
+  font-size: 15px;
+  color: #71767b;
+  line-height: 1.2;
+}
+
+.verified-badge {
+  width: 17px;
+  height: 17px;
+  color: #1d9bf0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0;
+  transform: translateY(-0.2px);
+}
+
+.verified-badge svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+.tweet-content {
+  margin: 14px 0 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tweet-content p {
+  margin: 0 0 8px;
+  line-height: 1.3125;
+  word-break: break-word;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+
+.media-card {
+  margin-top: 10px;
+  border: 1px solid #2f3336;
+  border-radius: 18px;
+  overflow: hidden;
+  width: 100%;
+  flex: 1;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.tweet-card.light .media-card {
+  border-color: #eff3f4;
+  background: #f3f4f6;
+}
+
+.media-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tweet-footer {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding-top: 2px;
+}
+
+.tweet-card.light .tweet-footer {
+  border-top-color: transparent;
+}
+
+.meta-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #71767b;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.dot {
+  opacity: 0.9;
+}
+
+.views-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.views-line strong {
+  color: #e7e9ea;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.views-line span {
+  color: #71767b;
+  font-size: 14px;
+}
+
+.tweet-card.light .views-line strong {
+  color: #0f1419;
+}
+
+.action-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #71767b;
+  padding-top: 10px;
+  border-top: 1px solid #2f3336;
+  padding-bottom: 0;
+}
+
+.tweet-card.light .action-row {
+  border-top-color: #eff3f4;
+}
+
+.action-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 52px;
+}
+
+.action-item em {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1;
+  color: #71767b;
+  transform: translateY(0.5px);
+}
+
+.action-icon {
+  width: 18.75px;
+  height: 18.75px;
+  display: block;
+  color: #6e767d;
+}
+
+.action-icon-repost {
+  transform: translateY(0.2px);
+}
+
+.action-icon-like {
+  transform: translateY(0.2px);
+}
+
+.action-icon-bookmark {
+  transform: translateY(0.2px);
+}
+
+.more-btn {
+  border: 0;
+  background: transparent;
+  color: #71767b;
+  padding: 2px;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+}
+
+.more-btn svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.tweet-card.light .more-btn {
+  color: #536471;
+}
+
+.top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: -2px;
+}
+
+.grok-btn {
+  border: 0;
+  background: transparent;
+  color: #e7e9ea;
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+}
+
+.grok-btn svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.tweet-card.light .grok-btn {
+  color: #536471;
+}
