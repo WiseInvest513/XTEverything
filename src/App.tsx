@@ -66,7 +66,7 @@ const TEXTS: Record<
   zh: {
     title: 'X To Everything',
     inputPanel: '左侧编辑区',
-    previewPanel: '右侧实时预览',
+    previewPanel: '实时预览',
     username: '用户名',
     handle: '账号',
     ratio: '比例',
@@ -802,7 +802,7 @@ function App() {
           <h1 className="flex items-center gap-1.5 font-nunito text-2xl font-extrabold tracking-tight">
             <img src="/xe-icon.png" alt="" className="h-8 w-8 shrink-0 object-contain" />
             <span className="bg-gradient-to-r from-slate-600 to-slate-500 bg-clip-text text-transparent">
-              To Everything
+              X To Everything
             </span>
           </h1>
           <div className="flex items-center gap-3">
@@ -1254,7 +1254,7 @@ function App() {
                   type="button"
                   className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                     selectedPage === idx
-                      ? 'border-[#1d9bf0] bg-[#1d9bf0] text-white'
+                      ? 'border-slate-600 bg-slate-600 text-white'
                       : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                   onClick={() => setSelectedPage(idx)}
@@ -1268,7 +1268,7 @@ function App() {
               <button
                 type="button"
                 onClick={() => saveCard(selectedPage)}
-                className="rounded-xl bg-[#1d9bf0] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#1d9bf0]/25 transition hover:bg-[#178ad6] hover:shadow-lg hover:shadow-[#1d9bf0]/30 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[#1d9bf0]/25"
+                className="rounded-xl bg-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-300/50"
               >
                 {t.downloadCurrent}
               </button>
