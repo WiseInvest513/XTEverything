@@ -835,19 +835,21 @@ function App() {
     reader.readAsDataURL(file)
   }
 
-  const saveCard = async (index: number) => {
+  const saveCard = async (index: number, userName?: string, userHandle?: string) => {
     const node = cardRefs.current[index]
     if (!node) return
     const dataUrl = await toPng(node, { pixelRatio: 2, cacheBust: true })
     const link = document.createElement('a')
-    link.download = `${handle.replace('@', '') || 'tweet'}-${index + 1}.png`
+    const u = (userName ?? username) || (userHandle ?? handle).replace('@', '') || 'tweet'
+    const safeName = u.replace(/[/\\:*?"<>|]/g, '_').trim() || 'tweet'
+    link.download = `XTE-${safeName}-${index + 1}.png`
     link.href = dataUrl
     link.click()
   }
 
   const downloadAll = async () => {
     for (let i = 0; i < pages.length; i += 1) {
-      await saveCard(i)
+      await saveCard(i, username, handle)
       await new Promise((resolve) => window.setTimeout(resolve, 120))
     }
   }
@@ -1410,7 +1412,7 @@ function App() {
               )}
               <button
                 type="button"
-                onClick={() => saveCard(selectedPage)}
+                onClick={() => saveCard(selectedPage, username, handle)}
                 className="rounded-xl bg-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-300/50"
               >
                 {t.downloadCurrent}
