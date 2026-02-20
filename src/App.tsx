@@ -171,12 +171,16 @@ function saveCache(key: string, value: string) {
   }
 }
 
-const CONTENT_WIDTH = PREVIEW_WIDTH - 48
+const CONTENT_WIDTH = PREVIEW_WIDTH - 28
 const LINE_HEIGHT_PX = 21
 const PARA_GAP_PX = 8
 
-function getCharsPerLine(lang: Lang) {
-  return Math.max(10, Math.floor(CONTENT_WIDTH / (lang === 'zh' ? 20 : 12)))
+function getStringFullWidthLen(s: string) {
+  let len = 0
+  for (let i = 0; i < s.length; i++) {
+    len += s.charCodeAt(i) > 255 ? 1 : 0.53
+  }
+  return len
 }
 
 const CARD_TOP = 52
@@ -194,11 +198,12 @@ function getImageFullDisplayHeight(
 }
 
 function getTextHeight(pageText: string, lang: Lang): number {
-  const charsPerLine = getCharsPerLine(lang)
+  const charsPerLine = Math.floor(CONTENT_WIDTH / 16)
   const paragraphs = pageText.split('\n').filter(Boolean)
   let totalLines = 0
   for (const p of paragraphs) {
-    totalLines += Math.max(1, Math.ceil(p.length / charsPerLine))
+    const fwLen = getStringFullWidthLen(p)
+    totalLines += Math.max(1, Math.ceil(fwLen / charsPerLine))
   }
   return totalLines * LINE_HEIGHT_PX + Math.max(0, paragraphs.length - 1) * PARA_GAP_PX
 }
@@ -358,11 +363,6 @@ function paginateContentWithMarkers(
       const imgUrl = images[seg.index]
       const dims = imageDims[seg.index]
       const fullHeight = getImageFullDisplayHeight(dims, CONTENT_WIDTH)
-      const nextItems = [...currentItems, { type: 'image' as const, url: imgUrl, fullHeight }]
-      const h = est(nextItems)
-      if (h > maxHeight && currentItems.length > 0) {
-        flushPage()
-      }
       addImageSlices(imgUrl, fullHeight)
     }
   }
@@ -376,22 +376,22 @@ function estimateMaxChars(ratio: RatioKey, lang: Lang) {
   const fixedHeight = 52 + 30 + 74
   const contentHeight = height - fixedHeight
   const lines = Math.max(3, Math.floor(contentHeight / LINE_HEIGHT_PX))
-  const charsPerLine = getCharsPerLine(lang)
+  const charsPerLine = Math.floor(CONTENT_WIDTH / 16)
   return lines * charsPerLine
 }
 
 function splitLongUnit(unit: string, maxChars: number) {
   const result: string[] = []
-  if (unit.length <= maxChars) return [unit]
+  if (getStringFullWidthLen(unit) <= maxChars) return [unit]
 
   if (unit.includes(' ')) {
     const words = unit.split(/\s+/).filter(Boolean)
     let current = ''
     for (const word of words) {
       const candidate = current ? `${current} ${word}` : word
-      if (candidate.length > maxChars) {
+      if (getStringFullWidthLen(candidate) > maxChars) {
         if (current) result.push(current)
-        if (word.length > maxChars) {
+        if (getStringFullWidthLen(word) > maxChars) {
           for (let i = 0; i < word.length; i += maxChars) {
             result.push(word.slice(i, i + maxChars))
           }
@@ -410,7 +410,13 @@ function splitLongUnit(unit: string, maxChars: number) {
   const punctRe = /[，。、；：！？!?\.\s]/
   let start = 0
   while (start < unit.length) {
-    let end = Math.min(start + maxChars, unit.length)
+    let end = start
+    let fwLen = 0
+    while (end < unit.length && fwLen < maxChars) {
+      fwLen += unit.charCodeAt(end) > 255 ? 1 : 0.53
+      if (fwLen > maxChars) break
+      end++
+    }
     if (end < unit.length) {
       const slice = unit.slice(start, end)
       let lastPunct = -1
@@ -420,7 +426,7 @@ function splitLongUnit(unit: string, maxChars: number) {
           break
         }
       }
-      if (lastPunct > maxChars * 0.4) {
+      if (lastPunct > (end - start) * 0.4) {
         end = start + lastPunct + 1
       }
     }
